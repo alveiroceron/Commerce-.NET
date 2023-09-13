@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Order.Persistence.Database;
+using Order.Service.Proxies;
+using Order.Service.Proxies.Catalog;
+using Order.Service.Queries;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
-        x => x.MigrationsHistoryTable("__EFMigrationHistory", "Catalog")
+        x => x.MigrationsHistoryTable("__EFMigrationHistory", "Order")
         )
 );
 
@@ -25,12 +29,20 @@ builder.Services.AddHealthChecksUI(opt =>
     opt.AddHealthCheckEndpoint("Healthcheck Order API", "/health");
 }).AddInMemoryStorage();
 
+// Api Urls
+builder.Services.Configure<ApiUrls>(
+        opts => builder.Configuration.GetSection("ApiUrls").Bind(opts));
 
-//builder.Services.AddMediatR(cfg =>
-//        cfg.RegisterServicesFromAssembly(Assembly.Load("Catalog.Service.EventHandlers"))
-//);
+// Proxies
+builder.Services.AddHttpClient<ICatalogProxy, CatalogProxy>();
 
-//builder.Services.AddTransient<IProductQueryService, ProductQueryService>();
+// Event handlers
+builder.Services.AddMediatR(cfg =>
+        cfg.RegisterServicesFromAssembly(Assembly.Load("Order.Service.EventHandlers")));
+
+// Query services
+builder.Services.AddTransient<IOrderQueryService, OrderQueryService>();
+
 
 builder.Services.AddControllers();
 

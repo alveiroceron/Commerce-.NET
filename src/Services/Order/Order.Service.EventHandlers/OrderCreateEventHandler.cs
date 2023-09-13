@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Order.Persistence.Database;
 using Order.Service.EventHandler.Commands;
+using Order.Service.Proxies.Catalog;
+using Order.Service.Proxies.Catalog.Commands;
 
 namespace Order.Service.EventHandler
 {
@@ -9,12 +11,15 @@ namespace Order.Service.EventHandler
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<OrderCreateEventHandler> _logger;
+        private readonly ICatalogProxy _catalogProxy;
 
         public OrderCreateEventHandler(
             ApplicationDbContext context,
+            ICatalogProxy catalogProxy,
             ILogger<OrderCreateEventHandler> logger)
         {
-                _context = context;
+            _context = context;
+            _catalogProxy = catalogProxy;
             _logger = logger;
         }
 
@@ -44,10 +49,27 @@ namespace Order.Service.EventHandler
                 // 04 Update Stocks
                 _logger.LogInformation("--- Updating stocks");
 
+                try
+                {
+                    await _catalogProxy.UpdateStockAsync(new ProductInStockUpdateStockCommand
+                    {
+                        Items = notification.Items.Select(x => new ProductInStockUpdateItem
+                        {
+                            Action = ProductInStockAction.Substract,
+                            ProductId = x.ProductId,
+                            Stock = x.Quantity
+                        })
+                    });
+                }
+                catch (Exception e)
+                {
+                    _logger.LogInformation($"--- Order Could not be created {e.Message}");
+                    throw new Exception();
+                }
+          
+
                 await trx.CommitAsync();
             }
-
-
         }
 
 

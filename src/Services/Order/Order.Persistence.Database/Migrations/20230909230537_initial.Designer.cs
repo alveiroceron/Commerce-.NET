@@ -12,7 +12,7 @@ using Order.Persistence.Database;
 namespace Order.Persistence.Database.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230904223243_initial")]
+    [Migration("20230909230537_initial")]
     partial class initial
     {
         /// <inheritdoc />

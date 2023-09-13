@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Order.Common\Order.Common.csproj" />
     <ProjectReference Include="..\Order.Common\Order.Common.csproj" />
   </ItemGroup>
 
