@@ -33,8 +33,15 @@ builder.Services.AddHealthChecksUI(opt =>
 builder.Services.Configure<ApiUrls>(
         opts => builder.Configuration.GetSection("ApiUrls").Bind(opts));
 
+// Azure Service Bus ConnectionString
+builder.Services.Configure<AzureServiceBus>(
+    opts => builder.Configuration.GetSection("AzureServiceBus").Bind(opts)
+);
+
 // Proxies
-builder.Services.AddHttpClient<ICatalogProxy, CatalogProxy>();
+//builder.Services.AddHttpClient<ICatalogProxy, CatalogHttpProxy>();
+builder.Services.AddTransient<ICatalogProxy, CatalogQueueProxy>();
+
 
 // Event handlers
 builder.Services.AddMediatR(cfg =>

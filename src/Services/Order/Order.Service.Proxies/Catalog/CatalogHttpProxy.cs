@@ -5,17 +5,12 @@ using System.Text.Json;
 
 namespace Order.Service.Proxies.Catalog
 {
-    public interface ICatalogProxy
-    {
-        Task UpdateStockAsync(ProductInStockUpdateStockCommand command);
-    }
-
-    public class CatalogProxy: ICatalogProxy
+    public class CatalogHttpProxy: ICatalogProxy
     {
         private readonly ApiUrls _apiUrls;
         private readonly HttpClient _httpClient;
 
-        public CatalogProxy(
+        public CatalogHttpProxy(
             HttpClient httpClient,
             IOptions<ApiUrls> apiUrls)
         {
