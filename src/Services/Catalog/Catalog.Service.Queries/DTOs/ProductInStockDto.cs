@@ -2,7 +2,7 @@
 {
     public class ProductInStockDto
     {
-        public int ProducInStockId { get; set; }
+        public int ProductInStockId { get; set; }
         public int ProductId { get; set; }
         public int Stock { get; set; }
     }

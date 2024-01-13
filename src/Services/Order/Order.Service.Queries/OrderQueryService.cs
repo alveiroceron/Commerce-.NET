@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Order.Domain;
 using Order.Persistence.Database;
+using Order.Service.Queries.DTOs;
 using Service.Common.Collection;
 using Service.Common.Mapping;
 using Service.Common.Paging;
@@ -33,7 +33,7 @@ namespace Order.Service.Queries
 
         public async Task<OrderDto> GetAsync(int id)
         {
-            return (await _context.Orders.SingleAsync(x => x.OrderId == id)).MapTo<OrderDto>();
+            return (await _context.Orders.Include(x => x.Items).SingleAsync(x => x.OrderId == id)).MapTo<OrderDto>();
         }
     }
 }

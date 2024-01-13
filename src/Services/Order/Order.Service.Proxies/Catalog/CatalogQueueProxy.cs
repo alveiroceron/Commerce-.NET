@@ -19,6 +19,8 @@ namespace Order.Service.Proxies.Catalog
         {
             var queueClient = new QueueClient(_connectionString, "order-stock-update");
 
+         
+
             // Serialize message
             string body = JsonSerializer.Serialize(command);
             var message = new Message(Encoding.UTF8.GetBytes(body));

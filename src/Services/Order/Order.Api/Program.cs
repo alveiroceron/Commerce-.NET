@@ -1,16 +1,21 @@
 using Common.Logging;
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.IdentityModel.Tokens;
 using Order.Persistence.Database;
 using Order.Service.Proxies;
 using Order.Service.Proxies.Catalog;
 using Order.Service.Queries;
 using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddHttpContextAccessor();
 
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -39,8 +44,8 @@ builder.Services.Configure<AzureServiceBus>(
 );
 
 // Proxies
-//builder.Services.AddHttpClient<ICatalogProxy, CatalogHttpProxy>();
-builder.Services.AddTransient<ICatalogProxy, CatalogQueueProxy>();
+builder.Services.AddHttpClient<ICatalogProxy, CatalogHttpProxy>();
+//builder.Services.AddTransient<ICatalogProxy, CatalogQueueProxy>();
 
 
 // Event handlers
@@ -53,6 +58,22 @@ builder.Services.AddTransient<IOrderQueryService, OrderQueryService>();
 
 builder.Services.AddControllers();
 
+//Add authentication
+var secretKey = Encoding.ASCII.GetBytes(builder.Configuration.GetValue<string>("SecretKey"));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
+{
+    x.RequireHttpsMetadata = false;
+    x.SaveToken = true;
+    x.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -63,10 +84,12 @@ if (!app.Environment.IsDevelopment())
             builder.Configuration.GetValue<int>("Papertrail:port"));
 }
 
+app.UseAuthorization();
+app.UseAuthentication();
+
 // Configure the HTTP request pipeline.
 app.UseHttpsRedirection();
 app.MapControllers();
-
 
 app.MapHealthChecks("/health", new HealthCheckOptions()
 {

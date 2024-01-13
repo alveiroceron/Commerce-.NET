@@ -10,7 +10,7 @@ namespace Catalog.Listener
     {
         // Connection String for the namespace can be obtained from the Azure portal under the 
         // 'Shared Access policies' section.
-        const string ServiceBusConnectionString = "";
+        const string ServiceBusConnectionString = "Endpoint=sb://comerce-queue.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=+SKBXsMEkGvGSz5rIHn/amtU0r/4sx3DD+ASbEJHgO8=";
         const string QueueName = "order-stock-update";
         static IQueueClient queueClient;
 
